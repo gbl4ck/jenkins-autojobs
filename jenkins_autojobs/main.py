@@ -136,13 +136,10 @@ def main(argv, create_job, list_branches, getoptfmt='vdtnr:j:u:p:y:o:UPYO', conf
 def cleanup(config, job_names, jenkins, verbose=True):
     print('\ncleaning up old jobs:')
 
-    tag = '</createdByJenkinsAutojobs>'
-    tagxpath = 'createdByJenkinsAutojobs/tag/text()'
-
-    managed_jobs = (job for job in jenkins.jobs if tag in job.config)
+    tagxpath = 'description/text()'
     removed_jobs = []
 
-    for job in managed_jobs:
+    for job in jenkins.jobs:
         if job.name not in job_names and job.exists:
             # if cleanup is a tag name, only cleanup builds with that tag
             if isinstance(config['cleanup'], str):
