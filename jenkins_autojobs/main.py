@@ -136,10 +136,18 @@ def main(argv, create_job, list_branches, getoptfmt='vdtnr:j:u:p:y:o:UPYO', conf
 def cleanup(config, job_names, jenkins, verbose=True):
     print('\ncleaning up old jobs:')
 
-    tagxpath = 'description/text()'
     removed_jobs = []
 
-    for job in jenkins.jobs:
+    if config['description']:
+        tagxpath = 'description/text()'
+        managed_jobs = (job for job in jenkins.jobs)
+    else:
+        tag = '</createdByJenkinsAutojobs>'
+        tagxpath = 'createdByJenkinsAutojobs/tag/text()'
+        managed_jobs = (job for job in jenkins.jobs if tag in job.config)
+
+
+    for job in managed_jobs:
         if job.name not in job_names and job.exists:
             # if cleanup is a tag name, only cleanup builds with that tag
             if isinstance(config['cleanup'], str):
@@ -181,17 +189,18 @@ def get_default_config(config, opts):
     c['cleanup']  = config.get('cleanup', False)
     c['username'] = config.get('username', None)
     c['password'] = config.get('password', None)
+    c['description'] =  config.get('description', False)
 
     # default settings for each git ref/branch/ config
     c['defaults'] = {
-        'namesep':    c.get('namesep', '-'),
-        'namefmt':    c.get('namefmt', '{shortref}'),
-        'overwrite':  c.get('overwrite', True),
-        'enable':     c.get('enable', 'sticky'),
-        'substitute': c.get('substitute', {}),
-        'template':   c.get('template'),
-        'sanitize':   c.get('sanitize', {'@!?#&|\^_$%*': '_'}),
-        'tag':        c.get('tag', []),
+        'namesep':        c.get('namesep', '-'),
+        'namefmt':        c.get('namefmt', '{shortref}'),
+        'overwrite':      c.get('overwrite', True),
+        'enable':         c.get('enable', 'sticky'),
+        'substitute':     c.get('substitute', {}),
+        'template':       c.get('template'),
+        'sanitize':       c.get('sanitize', {'@!?#&|\^_$%*': '_'}),
+        'tag':            c.get('tag', []),
     }
 
     # some options can be overwritten on the command line

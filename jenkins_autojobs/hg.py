@@ -107,7 +107,7 @@ def create_job(ref, template, config, ref_config):
     # name, we do it for them
     job.substitute(list(ref_config['substitute'].items()), fmtdict, groups, groupdict)
 
-    job.create(ref_config['overwrite'], config['dryrun'])
+    job.create(ref_config['overwrite'], config['dryrun'], config['description'])
 
     if config['debug']:
         debug_refconfig(ref_config)
